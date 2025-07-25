@@ -55,7 +55,7 @@ export function renderWeeklyCalendar(events, outputPath, options = {}) {
       const time = event.start.dateTime ? new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'All day';
       const summary = event.summary || "(No Title)";
       wrapText(ctx, `${time} - ${summary}`, x + 10, yOffset, columnWidth - 20, 20);
-      yOffset += 40;
+      yOffset += 80;
     });
   });
 
