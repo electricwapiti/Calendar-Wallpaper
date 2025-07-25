@@ -43,8 +43,16 @@ export function renderWeeklyCalendar(events, outputPath, options = {}) {
   Object.entries(grouped).forEach(([dateStr, events], i) => {
     const x = margin + i * (columnWidth + columnSpacing);
     const y = margin;
-    const date = new Date(dateStr);
-    const title = `${date.toLocaleDateString('en-US', { weekday: 'short' })} ${date.getMonth() + 1}/${date.getDate()}`;
+    const [year, month, day] = dateStr.split("-");
+    const chicagoDate = new Date(
+      new Date(`${month}/${day}/${year}`).toLocaleString("en-US", { timeZone: "America/Chicago" })
+    );
+
+    const title = chicagoDate.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "numeric",
+      day: "numeric",
+    });
     ctx.fillText(title, x + 10, y + 30);
 
     // Events in the column
@@ -67,17 +75,30 @@ export function renderWeeklyCalendar(events, outputPath, options = {}) {
 
 function groupEventsByDay(events, baseDate) {
   const grouped = {};
+
+  // Helper to get yyyy-mm-dd in Chicago local time
+  const getChicagoDateKey = (date) => {
+    const chicagoDate = new Date(date).toLocaleString("en-US", {
+      timeZone: "America/Chicago",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    });
+    const [month, day, year] = chicagoDate.split("/");
+    return `${year}-${month}-${day}`;
+  };
+
   for (let i = 0; i < 7; i++) {
     const date = new Date(baseDate);
     date.setDate(baseDate.getDate() + i);
-    const key = date.toISOString().split('T')[0];
+    const key = getChicagoDateKey(date);
     grouped[key] = [];
   }
 
   events.forEach(event => {
     const start = event.start.dateTime || event.start.date;
-    const dateKey = new Date(start).toISOString().split('T')[0];
-    if (grouped[dateKey]) grouped[dateKey].push(event);
+    const key = getChicagoDateKey(start);
+    if (grouped[key]) grouped[key].push(event);
   });
 
   return grouped;
